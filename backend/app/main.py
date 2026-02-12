@@ -1,14 +1,36 @@
 """
-Job-Hunter-AI-CRM — FastAPI Backend
+Lateralus — FastAPI Backend
 """
+
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.database import prisma
+from app.routers.job_router import router as job_router
+from app.routers.user_router import router as user_router
+
+
+# ---------------------------------------------------------------------------
+# Lifespan — Prisma connect / disconnect
+# ---------------------------------------------------------------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage the Prisma client connection across the app lifecycle."""
+    await prisma.connect()
+    yield
+    await prisma.disconnect()
+
+
+# ---------------------------------------------------------------------------
+# Application factory
+# ---------------------------------------------------------------------------
 app = FastAPI(
-    title="Job-Hunter-AI-CRM API",
+    title="Lateralus API",
     description="AI-powered CRM backend for intelligent job hunting",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # ---------------------------------------------------------------------------
@@ -22,13 +44,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------------------------------------------------------------------------
+# Register routers
+# ---------------------------------------------------------------------------
+app.include_router(user_router, prefix="/api/v1")
+app.include_router(job_router, prefix="/api/v1")
+
 
 # ---------------------------------------------------------------------------
-# Health / Hello World
+# Health / Root
 # ---------------------------------------------------------------------------
 @app.get("/")
 async def root():
-    return {"message": "🚀 Job-Hunter-AI-CRM API is running"}
+    return {"message": "🚀 Lateralus API is running"}
 
 
 @app.get("/health")
