@@ -3,6 +3,7 @@ uvicorn[standard]
 langgraph
 langchain
 langchain-openai
-pydantic
+pydantic[email]
+prisma
 sqlalchemy
 python-dotenv
