@@ -1,0 +1,49 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  processes JobProcess[]
+}
+
+model JobProcess {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  companyName    String
+  role           String
+  status         ProcessStatus @default(IDENTIFIED)
+  jobDescription String?
+  link           String?
+  createdAt      DateTime @default(now())
+  tasks          Task[]
+}
+
+model Task {
+  id           String     @id @default(uuid())
+  jobProcessId String
+  jobProcess   JobProcess @relation(fields: [jobProcessId], references: [id])
+  title        String
+  isCompleted  Boolean    @default(false)
+  dueDate      DateTime?
+}
+
+enum ProcessStatus {
+  IDENTIFIED
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+}
